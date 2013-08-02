@@ -318,7 +318,7 @@ public class IssuesActivity extends ListActivity {
 			mSifterHelper.onException(e.toString());
 			return;
 		}
-        ListAdapter adapter = new SimpleAdapter(this, issuesList,
+        ListAdapter adapter = new ColorItemAdapter(this, issuesList,
         		R.layout.issue_row,
                 new String[] {NUMBER, STATUS, PRIORITY, SUBJECT},
                 new int[] {R.id.issue_number, R.id.issue_status, R.id.issue_priority, R.id.issue_subject});

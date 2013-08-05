@@ -9,6 +9,9 @@ import android.os.Bundle;
 import android.text.util.Linkify;
 import android.widget.TextView;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class IssueDetail extends Activity {
 	
 	public static final String CATEGORY_NAME = "category_name";
@@ -48,7 +51,7 @@ public class IssueDetail extends Activity {
 			return;
 		try {
 			JSONObject issue = new JSONObject(extras.getString(IssuesActivity.ISSUE));
-			if (issue != null && checkFields(issue)) {
+			if (checkFields(issue)) {
 				issueNumber.setText(issue.getString(IssuesActivity.NUMBER));
 				categoryName.setText(issue.getString(CATEGORY_NAME));
 				priority.setText(issue.getString(IssuesActivity.PRIORITY));
@@ -69,29 +72,41 @@ public class IssueDetail extends Activity {
 			mSifterHelper.onException(e.toString()); // return not needed
 		}
 	}
-	
-	private boolean checkFields(JSONObject category) throws JSONException {
-		String API_ISSUES_URL = "api_url";
-		JSONArray fieldNames = category.names();
-		int numKeys = fieldNames.length();
-		for (int j = 0;j < numKeys; j++) {
-			if (!IssuesActivity.NUMBER.equals(fieldNames.getString(j)) &&
-					!CATEGORY_NAME.equals(fieldNames.getString(j)) &&
-					!IssuesActivity.PRIORITY.equals(fieldNames.getString(j)) &&
-					!IssuesActivity.SUBJECT.equals(fieldNames.getString(j)) &&
-					!DESCRIPTION.equals(fieldNames.getString(j)) &&
-					!MILESTONE_NAME.equals(fieldNames.getString(j)) &&
-					!OPENER_NAME.equals(fieldNames.getString(j)) &&
-					!ASSIGNEE_NAME.equals(fieldNames.getString(j)) &&
-					!IssuesActivity.STATUS.equals(fieldNames.getString(j)) &&
-					!COMMENT_COUNT.equals(fieldNames.getString(j)) &&
-					!CREATED_AT.equals(fieldNames.getString(j)) &&
-					!UPDATED_AT.equals(fieldNames.getString(j)) &&
-					!ISSUE_COMMENTS_URL.equals(fieldNames.getString(j)) &&
-					!API_ISSUES_URL.equals(fieldNames.getString(j)))
-				return false;
-		}
-		return true;
-	}
 
+    /**
+     * The point of this method seems to be to make sure that the given JSONObject
+     * has the fields we require in order to draw an issue. It should return false
+     * if a required field is absent, but it should not return false just because a
+     * non-required field is present.
+     *
+     * @param category the JSONObject to be inspected
+     * @return <tt>true</tt> if all the required fields are present
+     * @throws JSONException if there's a problem accessing the field names in the given object
+     */
+	private boolean checkFields(JSONObject category) throws JSONException {
+        String API_ISSUES_URL = "api_url";
+        JSONArray fieldNames = category.names();
+        int numKeys = fieldNames.length();
+        Set<String> foundNames = new HashSet<String>();
+        for (int j = 0;j < numKeys; j++) {
+            String fieldName = fieldNames.getString(j);
+            foundNames.add(fieldName);
+        }
+        boolean allPresent = foundNames.contains(IssuesActivity.NUMBER) &&
+                foundNames.contains(CATEGORY_NAME) &&
+                foundNames.contains(IssuesActivity.PRIORITY) &&
+                foundNames.contains(IssuesActivity.SUBJECT) &&
+                foundNames.contains(DESCRIPTION) &&
+                foundNames.contains(MILESTONE_NAME) &&
+                foundNames.contains(OPENER_NAME) &&
+                foundNames.contains(ASSIGNEE_NAME) &&
+                foundNames.contains(IssuesActivity.STATUS) &&
+                foundNames.contains(COMMENT_COUNT) &&
+                foundNames.contains(CREATED_AT) &&
+                foundNames.contains(UPDATED_AT) &&
+                foundNames.contains(ISSUE_COMMENTS_URL) &&
+                foundNames.contains(API_ISSUES_URL);
+
+        return allPresent; // TODO If we're returning false, we ought to indicate which required fields are missing
+    }
 }

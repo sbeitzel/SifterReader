@@ -1,6 +1,7 @@
 # Ignore metadata from IDEA (Android Studio)
 *.iml
 .idea/
+out/
 bin/
 gen/
 *~

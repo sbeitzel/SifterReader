@@ -107,13 +107,13 @@ public class SifterReader extends ListActivity {
 			mAccessKey = mSifterHelper.mAccessKey;
 		} else {
 			mLoginError = mSifterHelper.mLoginError;
-			loginKeys();
+			loginKeys(null);
 			return;
 		}
 		String projectsURL = HTTPS_PREFIX + mDomain + PROJECTS_URL + PROJECTS;
 		URLConnection sifterConnection = mSifterHelper.getSifterConnection(projectsURL);
 		if (sifterConnection == null) {
-			loginKeys();
+			loginKeys(null);
 			return;
 		}
 		mDialog = ProgressDialog.show(this, "", "Loading ...",true);
@@ -139,7 +139,7 @@ public class SifterReader extends ListActivity {
 			if (sifterJSONObject == null)
 				return;
 			if (getSifterError(sifterJSONObject)) {
-				loginKeys();
+				loginKeys(null);
 				return;
 			}
 			try {
@@ -188,7 +188,7 @@ public class SifterReader extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case LOGIN_ID:
-			loginKeys();
+			loginKeys(null);
 			return true;
 		case DELETE_ID:
 			deleteKeys();
@@ -198,8 +198,11 @@ public class SifterReader extends ListActivity {
 	}
 	
 	/** start LoginActivity to get domain and access key. */
-	private void loginKeys() {
+	private void loginKeys(Integer flags) {
 		Intent intent = new Intent(this, LoginActivity.class);
+        if (flags != null) {
+            intent.addFlags(flags);
+        }
 		intent.putExtra(DOMAIN, mDomain);
 		intent.putExtra(ACCESS_KEY, mAccessKey);
 		intent.putExtra(LOGIN_ERROR, mLoginError.toString());
@@ -209,7 +212,8 @@ public class SifterReader extends ListActivity {
 	private void deleteKeys() {
 		File keyFile = getFileStreamPath(KEY_FILE);
 		if (keyFile.exists()) {
-			keyFile.delete();
+            //noinspection ResultOfMethodCallIgnored
+            keyFile.delete();
 			mAllProjects = null;
 			mDomain = null;
 			mAccessKey = null;
@@ -223,6 +227,8 @@ public class SifterReader extends ListActivity {
 			setListAdapter(null);
 			onContentChanged();
 		}
+        // launch the login activity
+        loginKeys(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	}
 
 	/** start ProjectDetail activity for clicked project in list. */
@@ -315,7 +321,7 @@ public class SifterReader extends ListActivity {
 			if (sifterJSONObject == null)
 				return;
 			if (getSifterError(sifterJSONObject)) {
-				loginKeys();
+				loginKeys(null);
 				return;
 			}
 			if (PROJ_DETAIL.equals(ISSUES)) {
@@ -432,7 +438,7 @@ public class SifterReader extends ListActivity {
     		if (mDomain.length()==0 || mAccessKey.length()==0) {
     			try {
     				mLoginError = mSifterHelper.onMissingToken();
-    				loginKeys();
+    				loginKeys(null);
     			} catch (Exception e) {
     				e.printStackTrace();
     				mSifterHelper.onException(e.toString());
@@ -443,7 +449,7 @@ public class SifterReader extends ListActivity {
     		String projectsURL = HTTPS_PREFIX + mDomain + PROJECTS_URL + PROJECTS;
     		URLConnection sifterConnection = mSifterHelper.getSifterConnection(projectsURL);
     		if (sifterConnection == null) {
-    			loginKeys();
+    			loginKeys(null);
     			break;
     		} // if URL misformatted return to LoginActivity
     		mDialog = ProgressDialog.show(this, "", "Loading ...",true);
